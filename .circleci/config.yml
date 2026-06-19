@@ -19,7 +19,23 @@ jobs:
             . venv/bin/activate
             python -m unittest discover -s tests
 
+  deploy_to_render:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: Trigger Render Deploy
+          command: |
+            curl -X POST "$RENDER_DEPLOY_HOOK"
+
 workflows:
-  build-and-test-workflow:
+  build-test-and-deploy:
     jobs:
       - build-and-test
+      - deploy_to_render:
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only:
+                - main
